@@ -1,0 +1,38 @@
+bot.use(session());
+
+bot.command('reset', (ctx) => {
+  // Initialize ctx.session if not yet set
+  if (!ctx.session) {
+    ctx.session = {};
+  }
+
+  // Initialize ctx.session.counter if not yet set
+  if (!ctx.session.counter) {
+    ctx.session.counter = {};
+  }
+
+  // Reset the user's count
+  ctx.session.counter[ctx.from.id] = 0;
+
+  return ctx.reply('Tu contador ha sido reiniciado.');
+});
+
+bot.on('text', (ctx) => {
+  // Initialize ctx.session if not yet set
+  if (!ctx.session) {
+    ctx.session = {};
+  }
+
+  // Initialize ctx.session.counter if not yet set
+  if (!ctx.session.counter) {
+    ctx.session.counter = {};
+  }
+
+  const text = ctx.message.text.toLowerCase();
+
+  if (text === 'hola') {
+      // If user says 'hola', increment their count
+      ctx.session.counter[ctx.from.id] = (ctx.session.counter[ctx.from.id] || 0) + 1;
+      return ctx.reply(`Has dicho 'hola' ${ctx.session.counter[ctx.from.id]} veces.`);
+  }
+});
