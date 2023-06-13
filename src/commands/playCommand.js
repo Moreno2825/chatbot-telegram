@@ -6,32 +6,33 @@ const clinicalCases = loadData("clinicalCase.json");
 const usedQuestions = new Set();
 
 function getRandomQuestion() {
-  const availableQuestions = clinicalCases.filter(
-    (c) => !usedQuestions.has(c.id)
+  const availableClinicalQuestions = clinicalCases.filter(
+    (clinicalCase) => !usedQuestions.has(clinicalCase.id)
   );
 
-  if (availableQuestions.length === 0) {
+  if (availableClinicalQuestions.length === 0) {
     return null;
   }
 
-  const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-  const clinicalCase = availableQuestions[randomIndex];
+  const randomCaseIndex = Math.floor(Math.random() * availableClinicalQuestions.length);
+  const { id, question: questions} = availableClinicalQuestions[randomCaseIndex];
   const randomQuestionIndex = Math.floor(
-    Math.random() * clinicalCase.question.length
+    Math.random() * questions.length
   );
-  const question = clinicalCase.question[randomQuestionIndex];
+  const question = questions[randomQuestionIndex];
 
-  usedQuestions.add(clinicalCase.id);
+  usedQuestions.add(id);
 
-  return { clinicalCase, question };
+  return { clinicalCase: {id, question: questions}, question };
 }
+
 
 function playCommand(ctx) {
   const result = getRandomQuestion();
 
   if (result === null) {
     ctx.reply(
-      "¡Has respondido todas las preguntas disponibles! \n-Puedes reiniciar el juego usando /restart "
+      `¡Has respondido todas las preguntas disponibles! \n-Puedes reiniciar el juego usando /restart.\n\nTus resultados actuales son:\nRespuestas correctas: ${ctx.session.correctCount}\nRespuestas incorrectas: ${ctx.session.incorrectCount}`
     );
     return;
   }
@@ -57,6 +58,8 @@ function playCommand(ctx) {
 
 function resetCommand(ctx) {
   usedQuestions.clear();
+  ctx.session.correctCount = 0;
+  ctx.session.incorrectCount = 0;
   ctx.reply(
     "Al parecer quieres volver a reiniciar el juego y comprobar tu inteligencia conmigo\n Presione /play"
   );
