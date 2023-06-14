@@ -36,7 +36,8 @@
             }
           ]
         }
-      ]
+      ],
+      "feedback": "En este caso clínico, la respuesta correcta es la opción C: Inmovilización. La inmovilización es un tratamiento común y efectivo para las fracturas de hueso, ya que ayuda a estabilizar la lesión y promover la correcta recuperación del hueso fracturado."
     },
     {
       "id": 2,
@@ -74,7 +75,8 @@
             }
           ]
         }
-      ]
+      ],
+      "feedback": "En este caso clínico, la respuesta correcta es la opción A: Infarto de miocardio. Los síntomas de dolor en el pecho, opresión y dificultad para respirar son indicativos de un posible infarto de miocardio, una emergencia médica que requiere atención inmediata."
     },
     {
       "id": 3,
@@ -112,7 +114,8 @@
             }
           ]
         }
-      ]
+      ],
+      "feedback": "En este caso clínico, la respuesta correcta es la opción C: Quimioterapia. La quimioterapia es el tratamiento principal para el cáncer en etapas avanzadas, ayudando a combatir las células cancerosas y controlar la progresión de la enfermedad."
     },
     {
       "id": 4,
@@ -150,7 +153,8 @@
             }
           ]
         }
-      ]
+      ],
+      "feedback": "En este caso clínico, la respuesta correcta es la opción B: Diabetes tipo 2. Los síntomas descritos son más consistentes con la diabetes tipo 2, una condición crónica que se caracteriza por resistencia a la insulina y niveles elevados de glucosa en sangre."
     },
     {
       "id": 5,
@@ -188,7 +192,8 @@
             }
           ]
         }
-      ]
+      ],
+      "feedback": "En este caso clínico, la respuesta correcta es la opción D: Antidepresivos inhibidores selectivos de la recaptación de serotonina (ISRS). Estos fármacos son considerados como el tratamiento de elección para la depresión mayor debido a su efectividad y perfil de efectos secundarios más favorable."
     }
   ]
 }
