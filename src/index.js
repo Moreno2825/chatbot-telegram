@@ -45,8 +45,8 @@ bot.action(/\d+/, async (ctx) => {
   }
   
   const feedback = isAnswerCorrect
-    ? "😎." + ctx.session.question.answers[selectedAnswer - 1]?.feedback
-    : "😢. " + ctx.session.question.answers[selectedAnswer - 1]?.feedback;
+    ? "😎." + ctx.session.question.answers[selectedAnswer - 1]?.answer
+    : "😢. " + ctx.session.question.answers[selectedAnswer - 1]?.answer;
 
   await ctx.reply(feedback);
   playCommand(ctx);

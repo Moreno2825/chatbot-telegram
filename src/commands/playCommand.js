@@ -1,39 +1,49 @@
 const fs = require("fs");
 const { Markup } = require("telegraf");
 const loadData = require("../utils/loadData");
-const { error } = require("console");
 
 const clinicalCases = loadData("clinicalCase.json");
 
+let currentCase = null;
+let currentCaseQuestions = [];
 const usedQuestions = new Set();
 let generalFeedbacks = [];
 const gifPath = "public/congratulations.gif";
 
-function getRandomQuestion() {
-  const availableClinicalQuestions = clinicalCases.filter(
-    (c) => !usedQuestions.has(c.id)
-  );
+function getAvailableClinicalCases() {
+  return clinicalCases.filter(({ id }) => !usedQuestions.has(id));
+}
 
-  if (availableClinicalQuestions.length === 0) {
+function selectRandomCase() {
+  const availableClinicalCases = getAvailableClinicalCases();
+
+  if (availableClinicalCases.length === 0) {
     return null;
   }
 
-  const randomIndex = Math.floor(
-    Math.random() * availableClinicalQuestions.length
-  );
-  const clinicalCase = availableClinicalQuestions[randomIndex];
-  const randomQuestionIndex = Math.floor(
-    Math.random() * clinicalCase.question.length
-  );
-  const question = clinicalCase.question[randomQuestionIndex];
-
-  usedQuestions.add(clinicalCase.id);
-  generalFeedbacks.push(clinicalCase.feedback);
-
-  return { clinicalCase, question };
+  const randomIndex = Math.floor(Math.random() * availableClinicalCases.length);
+  return availableClinicalCases[randomIndex];
 }
 
-function playCommand(ctx) {
+function getRandomQuestion() {
+  if (currentCaseQuestions.length === 0) {
+    currentCase = selectRandomCase();
+    if (currentCase === null) {
+      return null;
+    }
+
+    const { id, question, feedbackGeneral } = currentCase;
+    currentCaseQuestions = [...question];
+
+    usedQuestions.add(id);
+    generalFeedbacks.push(feedbackGeneral);
+  }
+
+  const question = currentCaseQuestions.shift();
+  return { clinicalCase: currentCase, question };
+}
+
+async function playCommand(ctx) {
   const result = getRandomQuestion();
   const keyboardRestart = Markup.inlineKeyboard([
     Markup.button.callback("Presione para reinciar el juego", "restartCommand"),
@@ -45,7 +55,11 @@ function playCommand(ctx) {
     if (ctx.session.correctCount > ctx.session.incorrectCount) {
       finalMessage +=
         "\n\n¡Has logrado tener un buen puntuaje, sigue mejorando, para aprobar tu examen mucho exito!🏋🏻🎉🎉";
-      ctx.replyWithAnimation({source: fs.createReadStream(gifPath)}).catch(error  => console.log(`Erro al enviar el gif ${error.message}`));
+      ctx
+        .replyWithAnimation({ source: fs.createReadStream(gifPath) })
+        .catch((error) =>
+          console.log(`Erro al enviar el gif ${error.message}`)
+        );
     } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
       finalMessage += "\n\nSigue intentandolo, puedes mejorar.";
     }
@@ -54,14 +68,20 @@ function playCommand(ctx) {
       finalMessage += `\n\n*${index + 1}* - _${feedback}_`;
     });
 
-    ctx.replyWithMarkdown(finalMessage, keyboardRestart);
+    await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
     return;
   }
 
-  const { question } = result;
-
+  const { clinicalCase, question } = result;
+  
   ctx.session.question = question;
   ctx.session.correctAnswer = question.correctAnswer;
+
+  if (ctx.session.lastCase !== clinicalCase.id) {
+    let messageCase = `*Caso clinico:* ${clinicalCase.case} \n\n`;
+    await ctx.replyWithMarkdown(messageCase);
+    ctx.session.lastCase = clinicalCase.id;
+  }
 
   let message = `Pregunta: ${question.text}\n\nRespuestas:\n`;
   question.answers.forEach((answer, index) => {
@@ -74,10 +94,12 @@ function playCommand(ctx) {
     )
   );
 
-  ctx.reply(message, keyboard);
+  await ctx.reply(message, keyboard);
 }
 
 function restartCommand(ctx) {
+  ctx.session.lastCase = null;
+  generalFeedbacks = [];
   usedQuestions.clear();
   ctx.session.correctCount = 0;
   ctx.session.incorrectCount = 0;
