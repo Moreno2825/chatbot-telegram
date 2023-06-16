@@ -10,12 +10,15 @@ const usedQuestions = new Set();
 let generalFeedbacks = [];
 const gifPath = "public/congratulations.gif";
 
-function getAvailableClinicalCases() {
-  return clinicalCases.filter(({ id }) => !usedQuestions.has(id));
+function getAvailableClinicalCases(ctx) {
+  return clinicalCases.filter(
+    ({ id, specialty }) =>
+      !usedQuestions.has(id) && specialty === ctx.session.currentSpecialty
+  );
 }
 
-function selectRandomCase() {
-  const availableClinicalCases = getAvailableClinicalCases();
+function selectRandomCase(ctx) {
+  const availableClinicalCases = getAvailableClinicalCases(ctx);
 
   if (availableClinicalCases.length === 0) {
     return null;
@@ -25,9 +28,9 @@ function selectRandomCase() {
   return availableClinicalCases[randomIndex];
 }
 
-function getRandomQuestion() {
+function getRandomQuestion(ctx) {
   if (currentCaseQuestions.length === 0) {
-    currentCase = selectRandomCase();
+    currentCase = selectRandomCase(ctx);
     if (currentCase === null) {
       return null;
     }
@@ -44,7 +47,7 @@ function getRandomQuestion() {
 }
 
 async function playCommand(ctx) {
-  const result = getRandomQuestion();
+  const result = getRandomQuestion(ctx);
   const keyboardRestart = Markup.inlineKeyboard([
     Markup.button.callback("Presione para reinciar el juego", "restartCommand"),
   ]);
@@ -73,7 +76,7 @@ async function playCommand(ctx) {
   }
 
   const { clinicalCase, question } = result;
-  
+
   ctx.session.question = question;
   ctx.session.correctAnswer = question.correctAnswer;
 

@@ -4,7 +4,7 @@ const { Telegraf, session, Markup } = require("telegraf");
 const { playCommand, restartCommand } = require("./commands/playCommand");
 const helpCommand = require("./commands/helpCommand");
 const infoCommand = require("./commands/infoCommand");
-const playCategoryCommand = require("./commands/playCategoryCommand");
+const {playCategoryCommand, handleSpecialtySelection} = require("./commands/playCategoryCommand");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -54,10 +54,8 @@ bot.action(/\d+/, async (ctx) => {
 });
 
 bot.action(/specialty:(.+)/, async (ctx) => {
-  const selectedSpecialty = ctx.match[1];
-  ctx.session.selectedSpecialty = selectedSpecialty;
   await ctx.answerCbQuery();
-  ctx.reply(`Has seleccionado la especialidad: ${selectedSpecialty}`);
+  handleSpecialtySelection(ctx);
 });
 
 bot.command("play", playCommand);
