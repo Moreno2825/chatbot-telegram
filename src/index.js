@@ -24,12 +24,13 @@ bot.start((ctx) => {
 bot.action("restartCommand", async (ctx) => {
   await ctx.answerCbQuery();
   restartCommand(ctx);
-})
+});
 
 bot.action("playCommand", async (ctx) => {
   await ctx.answerCbQuery();
   playCommand(ctx);
-})
+});
+
 
 bot.action(/\d+/, async (ctx) => {
   const selectedAnswer = parseInt(ctx.match[0]);
@@ -40,10 +41,10 @@ bot.action(/\d+/, async (ctx) => {
 
   if (isAnswerCorrect) {
     ctx.session.correctCount++;
-  } else{
+  } else {
     ctx.session.incorrectCount++;
   }
-  
+
   const feedback = isAnswerCorrect
     ? "😎." + ctx.session.question.answers[selectedAnswer - 1]?.answer
     : "😢. " + ctx.session.question.answers[selectedAnswer - 1]?.answer;

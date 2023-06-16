@@ -36,3 +36,64 @@ bot.on('text', (ctx) => {
       return ctx.reply(`Has dicho 'hola' ${ctx.session.counter[ctx.from.id]} veces.`);
   }
 });
+
+bot.on('text', (ctx) => {
+  const number = parseInt(ctx.message.text);
+  if (!isNaN(number)) {
+    ctx.session.numberOfSpecialties = number;
+    ctx.reply(`¡Genial! Ahora selecciona ${number} especialidades.`);
+    // Llamada a la función playCategoryCommand
+    playCategoryCommand(ctx);
+  } else {
+    ctx.reply('Por favor, ingresa un número.');
+  }
+});
+
+bot.action(/specialty:(.+)/, async (ctx) => {
+  const selectedSpecialty = ctx.match[1];
+
+  // Inicializar la lista de especialidades si no existe
+  ctx.session.selectedSpecialties = ctx.session.selectedSpecialties || [];
+
+  // Agregar la especialidad seleccionada a la lista
+  ctx.session.selectedSpecialties.push(selectedSpecialty);
+
+  await ctx.answerCbQuery();
+
+  // Comprobar si el usuario ha seleccionado el número correcto de especialidades
+  if (ctx.session.selectedSpecialties.length < ctx.session.numberOfSpecialties) {
+    ctx.reply(`Has seleccionado: ${selectedSpecialty}. Por favor, selecciona ${ctx.session.numberOfSpecialties - ctx.session.selectedSpecialties.length} más.`);
+  } else {
+    ctx.reply(`Has seleccionado tus ${ctx.session.numberOfSpecialties} especialidades: ${ctx.session.selectedSpecialties.join(', ')}.`);
+  }
+});
+
+
+nuevos datos:
+const { Markup } = require("telegraf");
+const loadData = require("../utils/loadData");
+
+const clinicalCases = loadData("clinicalCase.json");
+
+
+function playCategoryCommand(ctx) {
+  const specialties = clinicalCases.map((c) => c.specialty);
+
+  const specialtyButtons = specialties.map((specialty) =>
+    Markup.button.callback(specialty, `specialty:${specialty}`)
+  );
+
+  const keyboard = Markup.inlineKeyboard(specialtyButtons, { columns: 2 });
+
+  ctx.reply("Elige una especialidad:", keyboard);
+}
+
+module.exports = playCategoryCommand;
+
+
+bot.action(/specialty:(.+)/, async (ctx) => {
+  const selectedSpecialty = ctx.match[1];
+  ctx.session.selectedSpecialty = selectedSpecialty;
+  await ctx.answerCbQuery();
+  ctx.reply(`Has seleccionado la especialidad: ${selectedSpecialty}`);
+});

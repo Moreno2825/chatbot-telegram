@@ -391,6 +391,78 @@
         }
       ],
       "feedbackGeneral": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
+    },
+    {
+      "id": 6,
+      "case": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+      "specialty": "Psiquiatría",
+      "question": [
+        {
+          "id": 1,
+          "text": "¿Cuál de las siguientes opciones es un tratamiento comúnmente recomendado para la depresión mayor resistente al tratamiento?",
+          "correctAnswer": 2,
+          "feedbackQuestion": "En casos de depresión mayor que son resistentes a los tratamientos tradicionales, como los medicamentos antidepresivos y la terapia cognitivo-conductual, la terapia electroconvulsiva puede ser un tratamiento eficaz. Sin embargo, se usa generalmente cuando otros tratamientos han fallado debido a sus riesgos y efectos secundarios.",
+          "answers": [
+            {
+              "id": 1,
+              "option": "A",
+              "text": "Terapia cognitivo-conductual",
+              "answer": "Respuesta incorrecta. Los ansiolíticos no son el tratamiento principal para la depresión mayor."
+            },
+            {
+              "id": 2,
+              "option": "B",
+              "text": "Terapia electroconvulsiva",
+              "answer": "Respuesta incorrecta. Los antidepresivos tricíclicos pueden ser una opción de tratamiento, pero no son de primera elección debido a sus efectos secundarios."
+            },
+            {
+              "id": 3,
+              "option": "C",
+              "text": "Medicación con estabilizadores del ánimo",
+              "answer": "Respuesta incorrecta. La terapia de electroconvulsiva puede ser utilizada en casos graves y resistentes de depresión, pero no es el tratamiento inicial."
+            },
+            {
+              "id": 4,
+              "option": "D",
+              "text": "Medicación con benzodiazepinas",
+              "answer": "Respuesta correcta. Los antidepresivos ISRS son la primera línea de tratamiento para la depresión mayor debido a su eficacia y menor riesgo de efectos secundarios graves."
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "text": "¿Cuál de las siguientes es una característica principal del trastorno límite de la personalidad?",
+          "correctAnswer": 1,
+          "feedbackQuestion": "Las personas con trastorno límite de la personalidad suelen tener relaciones intensas y volátiles, y pueden tener miedo de ser abandonadas. Este patrón de comportamiento puede hacer que sea difícil para ellas mantener relaciones estables a largo plazo.",
+          "answers": [
+            {
+              "id": 1,
+              "option": "A",
+              "text": "Dificultad para mantener relaciones estables",
+              "answer": "Respuesta incorrecta. Los ansiolíticos no son el tratamiento principal para la depresión mayor."
+            },
+            {
+              "id": 2,
+              "option": "B",
+              "text": "Experiencias frecuentes de alucinaciones",
+              "answer": "Respuesta incorrecta. Los antidepresivos tricíclicos pueden ser una opción de tratamiento, pero no son de primera elección debido a sus efectos secundarios."
+            },
+            {
+              "id": 3,
+              "option": "C",
+              "text": "Apego excesivo y dependencia de otras personas",
+              "answer": "Respuesta incorrecta. La terapia de electroconvulsiva puede ser utilizada en casos graves y resistentes de depresión, pero no es el tratamiento inicial."
+            },
+            {
+              "id": 4,
+              "option": "D",
+              "text": "Obsesiones y compulsiones recurrentes",
+              "answer": "Respuesta correcta. Los antidepresivos ISRS son la primera línea de tratamiento para la depresión mayor debido a su eficacia y menor riesgo de efectos secundarios graves."
+            }
+          ]
+        }
+      ],
+      "feedbackGeneral": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
     }
   ]
 }
