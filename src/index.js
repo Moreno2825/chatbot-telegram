@@ -4,21 +4,23 @@ const { Telegraf, session, Markup } = require("telegraf");
 const { playCommand, restartCommand } = require("./commands/playCommand");
 const helpCommand = require("./commands/helpCommand");
 const infoCommand = require("./commands/infoCommand");
+const {playCategoryCommand, handleSpecialitySelection} = require("./commands/playCategoryCommand");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.use(session());
 
-bot.start((ctx) => {
+bot.start( async (ctx) => {
   const gifPath = "public/welcome_opt.gif";
   const keyboard = Markup.inlineKeyboard([
-    Markup.button.callback("Presiona para jugar", "playCommand"),
+    Markup.button.callback("Modo Aleatorio", "playCommand"),
+    Markup.button.callback("Modo por Categoria", "playCategoryCommand")
   ]);
 
   ctx.session ??= {};
 
-  ctx.reply(`Bienvenido a Maestro ENARM bot ${ctx.from.first_name}.`, keyboard);
-  ctx.replyWithAnimation({ source: fs.createReadStream(gifPath) });
+  await ctx.reply(`Bienvenido a Maestro ENARM Chatbot ${ctx.from.first_name} \nImaginate estar preparado para el examen de ENARM y pasar con buena calificación💯\n¿Estaria cool no?😎.\nEsto lo puedes hacer mediante este chatbot donde puedes estudiar a través de telegram en cualquier lugar y comodidad\nPara eso te traigo dos modos de juegos el modo aleatorio que son casos clinicos aleatorios de cualquier especialidad o el modo por especialidad para centrarte en una sola y reforzar\nElige el que mejor te convenga y desafia tus habilidades con Maestro Enarm Chatbot😁👍`, keyboard);
+  await ctx.replyWithAnimation({ source: fs.createReadStream(gifPath) });
 });
 
 bot.action("restartCommand", async (ctx) => {
@@ -31,6 +33,11 @@ bot.action("playCommand", async (ctx) => {
   playCommand(ctx);
 });
 
+
+bot.action("playCategoryCommand", async (ctx) => {
+  await ctx.answerCbQuery();
+  playCategoryCommand(ctx);
+})
 
 bot.action(/\d+/, async (ctx) => {
   const selectedAnswer = parseInt(ctx.match[0]);
@@ -53,7 +60,13 @@ bot.action(/\d+/, async (ctx) => {
   playCommand(ctx);
 });
 
+bot.action(/speciality:(.+)/, async (ctx) => {
+  await ctx.answerCbQuery();
+  handleSpecialitySelection(ctx);
+});
+
 bot.command("play", playCommand);
+bot.command("speciality", playCategoryCommand);
 bot.command("restart", restartCommand);
 bot.command("help", helpCommand);
 bot.command("info", infoCommand);
