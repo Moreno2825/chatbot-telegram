@@ -12,8 +12,8 @@ const gifPath = "public/congratulations.gif";
 
 function getAvailableClinicalCases(ctx) {
   return clinicalCases.filter(
-    ({ id, specialty }) =>
-      !usedQuestions.has(id) && specialty === ctx.session.currentSpecialty
+    ({ id, speciality }) =>
+      !usedQuestions.has(id) && speciality === ctx.session.currentSpeciality
   );
 }
 
