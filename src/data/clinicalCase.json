@@ -400,7 +400,7 @@
         {
           "id": 1,
           "text": "¿Cuál de las siguientes opciones es un tratamiento comúnmente recomendado para la depresión mayor resistente al tratamiento?",
-          "correctAnswer": 2,
+          "correctAnswer": 4,
           "feedbackQuestion": "En casos de depresión mayor que son resistentes a los tratamientos tradicionales, como los medicamentos antidepresivos y la terapia cognitivo-conductual, la terapia electroconvulsiva puede ser un tratamiento eficaz. Sin embargo, se usa generalmente cuando otros tratamientos han fallado debido a sus riesgos y efectos secundarios.",
           "answers": [
             {
@@ -432,7 +432,7 @@
         {
           "id": 2,
           "text": "¿Cuál de las siguientes es una característica principal del trastorno límite de la personalidad?",
-          "correctAnswer": 1,
+          "correctAnswer": 4,
           "feedbackQuestion": "Las personas con trastorno límite de la personalidad suelen tener relaciones intensas y volátiles, y pueden tener miedo de ser abandonadas. Este patrón de comportamiento puede hacer que sea difícil para ellas mantener relaciones estables a largo plazo.",
           "answers": [
             {

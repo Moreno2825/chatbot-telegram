@@ -49,7 +49,9 @@ function getRandomQuestion(ctx) {
 async function playCommand(ctx) {
   const result = getRandomQuestion(ctx);
   const keyboardRestart = Markup.inlineKeyboard([
-    Markup.button.callback("Presione para reinciar el juego", "restartCommand"),
+    Markup.button.callback("¿Quieres regresar al menu? Presiona aqui", "restartCommand"),
+    Markup.button.callback("¿Quieres salir? Presiona aqui", "exitCommand"),
+
   ]);
 
   if (result === null) {
@@ -93,7 +95,7 @@ async function playCommand(ctx) {
 
   const keyboard = Markup.inlineKeyboard(
     question.answers.map((answer, index) =>
-      Markup.button.callback(String.fromCharCode(65 + index), answer.id)
+      Markup.button.callback(String.fromCharCode(65 + index), "answer_" + answer.id)
     )
   );
 
@@ -111,11 +113,12 @@ function restartCommand(ctx) {
 
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback("Modo aleatorio", "playCommand"),
-    Markup.button.callback("Modo por categoria", "playCategoryCommand")
+    Markup.button.callback("Modo por categoria", "playCategoryCommand"),
+    Markup.button.callback("Salir", "exitCommand")
   ]);
 
-  ctx.reply(
-    "Al parecer quieres volver a reiniciar el juego y comprobar tu inteligencia conmigo",
+  ctx.replyWithMarkdown(
+    "*Elige el modo de juego que deseas jugar:*",
     keyboard
   );
 }
