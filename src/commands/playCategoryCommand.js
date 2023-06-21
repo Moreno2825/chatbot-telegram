@@ -5,6 +5,7 @@ const { playCommand } = require("./playCommand");
 const clinicalCases = loadData("clinicalCase.json");
 
 function playCategoryCommand(ctx) {
+  ctx.session.currentSpeciality = null;
   const specialities = [...new Set(clinicalCases.map((c) => c.speciality))];
 
   const specialityButtons = specialities.map((speciality) =>

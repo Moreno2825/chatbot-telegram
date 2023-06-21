@@ -13,7 +13,7 @@ const gifPath = "public/congratulations.gif";
 function getAvailableClinicalCases(ctx) {
   return clinicalCases.filter(
     ({ id, speciality }) =>
-      !usedQuestions.has(id) && speciality === ctx.session.currentSpeciality
+      !usedQuestions.has(id) && (ctx.session.currentSpeciality == null || speciality === ctx.session.currentSpeciality)
   );
 }
 
@@ -100,15 +100,18 @@ async function playCommand(ctx) {
   await ctx.reply(message, keyboard);
 }
 
+
 function restartCommand(ctx) {
   ctx.session.lastCase = null;
   generalFeedbacks = [];
   usedQuestions.clear();
   ctx.session.correctCount = 0;
   ctx.session.incorrectCount = 0;
+  ctx.session.currentSpeciality = null;
 
   const keyboard = Markup.inlineKeyboard([
-    Markup.button.callback("Presione para jugar", "playCommand"),
+    Markup.button.callback("Modo aleatorio", "playCommand"),
+    Markup.button.callback("Modo por categoria", "playCategoryCommand")
   ]);
 
   ctx.reply(
