@@ -9,11 +9,17 @@ let currentCaseQuestions = [];
 const usedQuestions = new Set();
 let generalFeedbacks = [];
 const gifPath = "public/congratulations.gif";
+const sadDuckSticker =
+  "CAACAgIAAxkBAAO1ZJR3dmueEa_SiDw90555s_FN0ZkAAvMAA1advQpqG-vEx_qW_i8E";
+const happyDuckSticker =
+  "CAACAgIAAxkBAAO2ZJR4SmWEEYhAJummR5hPP5XG-QkAAvcAA1advQoLciQdSPQNMC8E";
 
 function getAvailableClinicalCases(ctx) {
   return clinicalCases.filter(
     ({ id, speciality }) =>
-      !usedQuestions.has(id) && (ctx.session.currentSpeciality == null || speciality === ctx.session.currentSpeciality)
+      !usedQuestions.has(id) &&
+      (ctx.session.currentSpeciality == null ||
+        speciality === ctx.session.currentSpeciality)
   );
 }
 
@@ -49,9 +55,10 @@ function getRandomQuestion(ctx) {
 async function playCommand(ctx) {
   const result = getRandomQuestion(ctx);
   const keyboardRestart = Markup.inlineKeyboard([
-    Markup.button.callback("¿Quieres regresar al menu? Presiona aqui", "restartCommand"),
-    Markup.button.callback("¿Quieres salir? Presiona aqui", "exitCommand"),
-
+    Markup.button.callback(
+      "Presiona aqui, para regresar al menú",
+      "restartCommand"
+    ),
   ]);
 
   if (result === null) {
@@ -60,11 +67,6 @@ async function playCommand(ctx) {
     if (ctx.session.correctCount > ctx.session.incorrectCount) {
       finalMessage +=
         "\n\n¡Has logrado tener un buen puntuaje, sigue mejorando, para aprobar tu examen mucho exito!🏋🏻🎉🎉";
-      ctx
-        .replyWithAnimation({ source: fs.createReadStream(gifPath) })
-        .catch((error) =>
-          console.log(`Erro al enviar el gif ${error.message}`)
-        );
     } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
       finalMessage += "\n\nSigue intentandolo, puedes mejorar.";
     }
@@ -74,6 +76,12 @@ async function playCommand(ctx) {
     });
 
     await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
+
+    if (ctx.session.correctCount > ctx.session.incorrectCount) {
+      await ctx.replyWithSticker(happyDuckSticker);
+    } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
+      await ctx.replyWithSticker(sadDuckSticker);
+    }
     return;
   }
 
@@ -95,13 +103,15 @@ async function playCommand(ctx) {
 
   const keyboard = Markup.inlineKeyboard(
     question.answers.map((answer, index) =>
-      Markup.button.callback(String.fromCharCode(65 + index), "answer_" + answer.id)
+      Markup.button.callback(
+        String.fromCharCode(65 + index),
+        "answer_" + answer.id
+      )
     )
   );
 
   await ctx.reply(message, keyboard);
 }
-
 
 function restartCommand(ctx) {
   ctx.session.lastCase = null;
@@ -112,15 +122,12 @@ function restartCommand(ctx) {
   ctx.session.currentSpeciality = null;
 
   const keyboard = Markup.inlineKeyboard([
-    Markup.button.callback("Modo aleatorio", "playCommand"),
-    Markup.button.callback("Modo por categoria", "playCategoryCommand"),
-    Markup.button.callback("Salir", "exitCommand")
+    Markup.button.callback("Aleatorio", "playCommand"),
+    Markup.button.callback("Categoria", "playCategoryCommand"),
+    Markup.button.callback("Salir", "exitCommand"),
   ]);
 
-  ctx.replyWithMarkdown(
-    "*Elige el modo de juego que deseas jugar:*",
-    keyboard
-  );
+  ctx.replyWithMarkdown("*Elige el modo de juego que deseas jugar:*", keyboard);
 }
 
 module.exports = { playCommand, restartCommand };
