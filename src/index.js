@@ -88,7 +88,9 @@ bot.action(/answer_(\d+)/, async (ctx) => {
 
   if (ctx.session.state === "awaiting") {
     ctx.session.state = "responded";
-    await playCommand(ctx);
+    setTimeout(() => {
+      playCommand(ctx);
+    }, 1000);
   }
 });
 
