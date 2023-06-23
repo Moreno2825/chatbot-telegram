@@ -1,4 +1,3 @@
-const fs = require("fs");
 const { Markup } = require("telegraf");
 const loadData = require("../utils/loadData");
 
@@ -8,7 +7,6 @@ let currentCase = null;
 let currentCaseQuestions = [];
 const usedQuestions = new Set();
 let generalFeedbacks = [];
-const gifPath = "public/congratulations.gif";
 const sadDuckSticker =
   "CAACAgIAAxkBAAO1ZJR3dmueEa_SiDw90555s_FN0ZkAAvMAA1advQpqG-vEx_qW_i8E";
 const happyDuckSticker =
@@ -41,11 +39,11 @@ function getRandomQuestion(ctx) {
       return null;
     }
 
-    const { id, question, feedbackGeneral } = currentCase;
+    const { id, question, feedbackGeneral, book } = currentCase;
     currentCaseQuestions = [...question];
 
     usedQuestions.add(id);
-    generalFeedbacks.push(feedbackGeneral);
+    generalFeedbacks.push({ feedback: feedbackGeneral, book });
   }
 
   const question = currentCaseQuestions.shift();
@@ -71,8 +69,8 @@ async function playCommand(ctx) {
       finalMessage += "\n\nSigue intentandolo, puedes mejorar.";
     }
 
-    generalFeedbacks.forEach((feedback, index) => {
-      finalMessage += `\n\n*${index + 1}* - _${feedback}_`;
+    generalFeedbacks.forEach(({feedback, book}, index) => {
+      finalMessage += `\n\n*${index + 1}* - _${feedback}_\n\nPara más información, consulta el libro: ${book}`;
     });
 
     await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
@@ -82,6 +80,8 @@ async function playCommand(ctx) {
     } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
       await ctx.replyWithSticker(sadDuckSticker);
     }
+
+    ctx.session.state = "finished";
     return;
   }
 
@@ -111,6 +111,8 @@ async function playCommand(ctx) {
   );
 
   await ctx.reply(message, keyboard);
+
+  ctx.session.state = "awaiting";
 }
 
 function restartCommand(ctx) {

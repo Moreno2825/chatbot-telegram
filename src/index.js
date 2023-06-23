@@ -12,7 +12,7 @@ const { correctGifts, incorrectGifts } = require("./constant");
 const exitCommand = require("./commands/exitCommand");
 
 function escape(str) {
-  return str.replace(/[_*[\]()~`>#+-=|{}.!]/g, '\\$&');
+  return str.replace(/[_*[\]()~`>#+-=|{}.!]/g, "\\$&");
 }
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -53,7 +53,7 @@ bot.action("playCategoryCommand", async (ctx) => {
 bot.action("exitCommand", async (ctx) => {
   await ctx.answerCbQuery();
   exitCommand(ctx);
-})
+});
 
 bot.action(/answer_(\d+)/, async (ctx) => {
   const selectedAnswer = parseInt(ctx.match[1]);
@@ -75,15 +75,21 @@ bot.action(/answer_(\d+)/, async (ctx) => {
   await ctx.reply(feedback);
 
   const gif = isAnswerCorrect
-  ? correctGifts[Math.floor(Math.random() * correctGifts.length)]
-  : incorrectGifts[Math.floor(Math.random() * incorrectGifts.length)];
+    ? correctGifts[Math.floor(Math.random() * correctGifts.length)]
+    : incorrectGifts[Math.floor(Math.random() * incorrectGifts.length)];
 
-  await ctx.replyWithAnimation({source: fs.createReadStream(gif)});
+  await ctx.replyWithAnimation({ source: fs.createReadStream(gif) });
 
   if (!isAnswerCorrect) {
-    await ctx.replyWithMarkdownV2(`*${escape(ctx.session.question.feedbackQuestion)}*`);
+    await ctx.replyWithMarkdownV2(
+      `*${escape(ctx.session.question.feedbackQuestion)}*`
+    );
   }
-  await playCommand(ctx);
+
+  if (ctx.session.state === "awaiting") {
+    ctx.session.state = "responded";
+    await playCommand(ctx);
+  }
 });
 
 bot.action(/speciality:(.+)/, async (ctx) => {
