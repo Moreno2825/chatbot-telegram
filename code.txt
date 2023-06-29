@@ -90,10 +90,57 @@ function playCategoryCommand(ctx) {
 
 module.exports = playCategoryCommand;
 
-
+manera de llamadas a la base de datos
 bot.action(/specialty:(.+)/, async (ctx) => {
   const selectedSpecialty = ctx.match[1];
   ctx.session.selectedSpecialty = selectedSpecialty;
   await ctx.answerCbQuery();
   ctx.reply(`Has seleccionado la especialidad: ${selectedSpecialty}`);
+});
+
+bot.command("firebase", async (ctx) => {
+  try {
+    const doc = await db
+      .collection("clinicalCase")
+      .doc("1hsmkGQx5sdibpsddxls")
+      .get();
+    if (doc.exists) {
+      ctx.reply("Conexion exitosa");
+    } else {
+      ctx.reply("No se encontró el documento");
+    }
+  } catch (error) {
+    ctx.reply("Error al acceder a la base de datos: " + error.message);
+  }
+});
+
+bot.command("escribir", async (ctx) => {
+  try {
+    const aTuringRef = db.collection("users").doc("aturing");
+    await aTuringRef.set({
+      first: "Alan",
+      middle: "Mathinson",
+      last: "Turing",
+      born: 1912
+    });
+    ctx.reply("Escritura en la base de datos exitosa");
+  } catch (error) {
+    ctx.reply("Error al escribir en la base de datos: " + error.message);
+  }
+});
+
+bot.command("leer", async (ctx) => {
+  try {
+    const snapshot = await db.collection("users").get();
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      let message = `ID: ${doc.id}\n\n`;
+      Object.keys(data).forEach((key) => {
+        message += `• ${key}: ${data[key]}\n`;
+      });
+      ctx.replyWithMarkdownV2(message);
+    });
+  } catch (error) {
+    ctx.reply("Error al leer la base de datos: " + error.message);
+  }
 });
