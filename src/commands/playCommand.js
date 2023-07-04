@@ -1,7 +1,5 @@
 const { Markup } = require("telegraf");
-const loadData = require("../utils/loadData");
-
-const clinicalCases = loadData("clinicalCase.json");
+const { clinicalCases } = require("../constant.js");
 
 let currentCase = null;
 let currentCaseQuestions = [];
@@ -13,11 +11,13 @@ const happyDuckSticker =
   "CAACAgIAAxkBAAO2ZJR4SmWEEYhAJummR5hPP5XG-QkAAvcAA1advQoLciQdSPQNMC8E";
 
 function getAvailableClinicalCases(ctx) {
-  return clinicalCases.filter(
-    ({ id, speciality }) =>
+  return Object.values(clinicalCases).filter(
+    ({ id, speciality, subSpeciality }) =>
       !usedQuestions.has(id) &&
       (ctx.session.currentSpeciality == null ||
-        speciality === ctx.session.currentSpeciality)
+        speciality === ctx.session.currentSpeciality) &&
+      (ctx.session.currentSubSpeciality == null ||
+        subSpeciality === ctx.session.currentSubSpeciality)
   );
 }
 
@@ -54,23 +54,29 @@ async function playCommand(ctx) {
   const result = getRandomQuestion(ctx);
   const keyboardRestart = Markup.inlineKeyboard([
     Markup.button.callback(
-      "Presiona aqui, para regresar al menú",
+      "Presiona aquí para regresar al menú",
       "restartCommand"
     ),
   ]);
 
   if (result === null) {
-    let finalMessage = `¡Has respondido todas las preguntas disponibles!\n\n*✅ Respuestas correctas: ${ctx.session.correctCount}\n❌ Respuestas incorrectas: ${ctx.session.incorrectCount}*`;
+    let finalMessage = `¡Has respondido todas las preguntas disponibles!\n\n*✅ Respuestas correctas: ${ctx.session.correctCount} *\n❌*Respuestas incorrectas: ${ctx.session.incorrectCount}*`;
+
+    const totalAnswers = ctx.session.correctCount + ctx.session.incorrectCount;
+    const precision = (ctx.session.correctCount / totalAnswers ) * 100;
+
+    finalMessage += `\n\n*Presición: ${precision.toFixed(2)}%*`;
 
     if (ctx.session.correctCount > ctx.session.incorrectCount) {
-      finalMessage +=
-        "\n\n¡Has logrado tener un buen puntuaje, sigue mejorando, para aprobar tu examen mucho exito!🏋🏻🎉🎉";
+      finalMessage += "\n\n¡Has logrado obtener una buena puntuación! ¡Sigue mejorando y mucho éxito en tu examen! 🏋🏻🎉🎉";
     } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
-      finalMessage += "\n\nSigue intentandolo, puedes mejorar.";
+      finalMessage += "\n\nSigue intentándolo, puedes mejorar.";
+    } else {
+      finalMessage += "\n\nVaya tu puntuación quedo igual, animate a intentarlo de nuevo!"
     }
 
-    generalFeedbacks.forEach(({feedback, book}, index) => {
-      finalMessage += `\n\n*${index + 1}* - _${feedback}_\n\nPara más información, consulta el libro: ${book}`;
+    generalFeedbacks.forEach(({ feedback, book }, index) => {
+      finalMessage += `\n\n${index + 1} - ${feedback}\n\nPara más información, consulta el libro: ${book}`;
     });
 
     await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
@@ -91,7 +97,7 @@ async function playCommand(ctx) {
   ctx.session.correctAnswer = question.correctAnswer;
 
   if (ctx.session.lastCase !== clinicalCase.id) {
-    let messageCase = `*Caso clinico:* ${clinicalCase.case} \n\n`;
+    let messageCase = `*Caso clínico:* ${clinicalCase.case} \n\n`;
     await ctx.replyWithMarkdown(messageCase);
     ctx.session.lastCase = clinicalCase.id;
   }
@@ -110,7 +116,9 @@ async function playCommand(ctx) {
     )
   );
 
-  await ctx.reply(message, keyboard);
+  setTimeout(async () => {
+    await ctx.reply(message, keyboard);
+  }, 1500);
 
   ctx.session.state = "awaiting";
 }
@@ -122,14 +130,14 @@ function restartCommand(ctx) {
   ctx.session.correctCount = 0;
   ctx.session.incorrectCount = 0;
   ctx.session.currentSpeciality = null;
+  ctx.session.currentSubSpeciality = null;
 
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback("Aleatorio", "playCommand"),
-    Markup.button.callback("Categoria", "playCategoryCommand"),
+    Markup.button.callback("Categoría", "playCategoryCommand"),
     Markup.button.callback("Salir", "exitCommand"),
   ]);
 
   ctx.replyWithMarkdown("*Elige el modo de juego que deseas jugar:*", keyboard);
 }
-
 module.exports = { playCommand, restartCommand };
