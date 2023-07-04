@@ -1,25 +1,36 @@
 require("dotenv").config();
 const fs = require("fs");
-const { Telegraf, session, Markup } = require("telegraf");
+const { Telegraf, session, Markup, Scenes } = require("telegraf");
 const { playCommand, restartCommand } = require("./commands/playCommand");
 const helpCommand = require("./commands/helpCommand");
 const infoCommand = require("./commands/infoCommand");
 const {
   playCategoryCommand,
   handleSpecialitySelection,
+  handleSubSpecialitySelection
 } = require("./commands/playCategoryCommand");
 const { correctGifts, incorrectGifts } = require("./constant");
 const exitCommand = require("./commands/exitCommand");
-
-function escape(str) {
-  return str.replace(/[_*[\]()~`>#+-=|{}.!]/g, "\\$&");
-}
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 bot.use(session());
 
+const playScene = new Scenes.BaseScene("playScene");
+
+playScene.command("play", (ctx) => {
+  if (ctx.session.started) {
+    playCommand(ctx);
+  } else{
+    ctx.reply("Por favor, primero inicia el boton con /start");
+  }
+})
+
+const stage = new Scenes.Stage([playScene]);
+bot.use(stage.middleware());
+
 bot.start(async (ctx) => {
+  ctx.session.started = true;
   const gifPath = "public/welcome_opt.gif";
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback("Modo Aleatorio", "playCommand"),
@@ -81,8 +92,8 @@ bot.action(/answer_(\d+)/, async (ctx) => {
   await ctx.replyWithAnimation({ source: fs.createReadStream(gif) });
 
   if (!isAnswerCorrect) {
-    await ctx.replyWithMarkdownV2(
-      `*${escape(ctx.session.question.feedbackQuestion)}*`
+    await ctx.reply(
+      `${(ctx.session.question.feedbackQuestion)}`
     );
   }
 
@@ -90,7 +101,7 @@ bot.action(/answer_(\d+)/, async (ctx) => {
     ctx.session.state = "responded";
     setTimeout(() => {
       playCommand(ctx);
-    }, 1000);
+    }, 1800);
   }
 });
 
@@ -98,6 +109,15 @@ bot.action(/speciality:(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
   handleSpecialitySelection(ctx);
 });
+
+bot.action(/subSpeciality:(.+)/, async (ctx) => {
+  await ctx.answerCbQuery();
+  handleSubSpecialitySelection(ctx); 
+});
+
+bot.hears("Hola", (ctx) => {
+  ctx.reply(`Hey hola ${ctx.from.first_name} ¿Como estás?, quieres volver a jugar presiona /start`)
+})
 
 bot.command("play", playCommand);
 bot.command("speciality", playCategoryCommand);
