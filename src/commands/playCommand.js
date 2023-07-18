@@ -1,5 +1,7 @@
 const { Markup } = require("telegraf");
 const { clinicalCases } = require("../constant.js");
+const admin = require("firebase-admin");
+const db = require("../utils/firebase.js");
 
 let currentCase = null;
 let currentCaseQuestions = [];
@@ -50,6 +52,70 @@ function getRandomQuestion(ctx) {
   return { clinicalCase: currentCase, question };
 }
 
+function calculatePrecision(correctCount, incorrectCount) {
+  const totalAnswers = correctCount + incorrectCount;
+  const precision = (correctCount / totalAnswers) * 100;
+  return precision;
+}
+
+function getPrecisionMessage(precision) {
+  let message = "";
+  if (precision > 80) {
+    message =
+      "\n\n¡Felicidades🎉🥳! 🎯Tu precision es mayor al 80%. Sigue estudiando y lograrás pasar el examen ENARM";
+  } else {
+    message =
+      "\n\nTu precisión es menor al 80%😢❌. Te recomendamos practicar más para mejorar, visita nuestra pagina Maestro Enarm Academy";
+  }
+  return message;
+}
+
+async function storeStatistics(ctx) {
+  const user_id = ctx.from.id;
+  const precision = calculatePrecision(
+    ctx.session.correctCount,
+    ctx.session.incorrectCount
+  );
+  const userRef = db.collection("users").doc(String(user_id));
+
+  const userData = {
+    correctCount: ctx.session.correctCount,
+    incorrectCount: ctx.session.incorrectCount,
+    precision: precision,
+    session: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  await userRef.set(userData, { merge: true });
+}
+
+async function stadisticCommand(ctx) {
+  const user_id = ctx.from.id;
+  const userRef = db.collection("users").doc(String(user_id));
+
+  ctx.reply(
+    `Bienvenido ${ctx.from.first_name}!😎👍, Analizare la base de datos para ver tus estadisticas`
+  );
+
+  setTimeout(async () => {
+    try {
+      const snapshot = await userRef.get();
+      if (snapshot.exists) {
+        const { precision, correctCount, incorrectCount } = snapshot.data();
+
+        let message = `📊👩🏻‍⚕️Tus estadísticas son👨🏻‍⚕️:\n\n✅Respuestas correctas: ${correctCount}\n❌Respuestas incorrectas: ${incorrectCount}\n🎯Con una precisión de: ${precision}%`;
+        message += getPrecisionMessage(precision);
+        ctx.reply(message);
+      } else {
+        ctx.reply("No se encontraron estadísticas para este usuario.");
+      }
+    } catch (error) {
+      ctx.reply(
+        "Ocurrio un error al obtener las estadísticas. Por favor, intentalo más tarde"
+      );
+    }
+  }, 3000);
+}
+
 async function playCommand(ctx) {
   const result = getRandomQuestion(ctx);
   const keyboardRestart = Markup.inlineKeyboard([
@@ -60,23 +126,21 @@ async function playCommand(ctx) {
   ]);
 
   if (result === null) {
-    let finalMessage = `¡Has respondido todas las preguntas disponibles!\n\n*✅ Respuestas correctas: ${ctx.session.correctCount} *\n❌*Respuestas incorrectas: ${ctx.session.incorrectCount}*`;
+    let finalMessage = `¡Has respondido todas las preguntas disponibles!\n\n*✅ Respuestas correctas: ${ctx.session.correctCount} *\n❌*Respuestas incorrectas: ${ctx.session.incorrectCount}.\n Se ha actualizado de manera correcta tu nuevo puntuaje a la base de datos 📚✅*`;
 
-    const totalAnswers = ctx.session.correctCount + ctx.session.incorrectCount;
-    const precision = (ctx.session.correctCount / totalAnswers ) * 100;
+    const precision = calculatePrecision(
+      ctx.session.correctCount,
+      ctx.session.incorrectCount
+    );
 
     finalMessage += `\n\n*Presición: ${precision.toFixed(2)}%*`;
 
-    if (ctx.session.correctCount > ctx.session.incorrectCount) {
-      finalMessage += "\n\n¡Has logrado obtener una buena puntuación! ¡Sigue mejorando y mucho éxito en tu examen! 🏋🏻🎉🎉";
-    } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
-      finalMessage += "\n\nSigue intentándolo, puedes mejorar.";
-    } else {
-      finalMessage += "\n\nVaya tu puntuación quedo igual, animate a intentarlo de nuevo!"
-    }
+    finalMessage += getPrecisionMessage(precision);
 
     generalFeedbacks.forEach(({ feedback, book }, index) => {
-      finalMessage += `\n\n${index + 1} - ${feedback}\n\nPara más información, consulta el libro: ${book}`;
+      finalMessage += `\n\n${
+        index + 1
+      } - ${feedback}\n\nPara más información, consulta el libro📚: ${book}`;
     });
 
     await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
@@ -86,6 +150,8 @@ async function playCommand(ctx) {
     } else if (ctx.session.correctCount < ctx.session.incorrectCount) {
       await ctx.replyWithSticker(sadDuckSticker);
     }
+
+    await storeStatistics(ctx);
 
     ctx.session.state = "finished";
     return;
@@ -138,6 +204,9 @@ function restartCommand(ctx) {
     Markup.button.callback("Salir", "exitCommand"),
   ]);
 
-  ctx.replyWithMarkdown("*Elige el modo de juego que deseas jugar:*", keyboard);
+  ctx.replyWithMarkdown(
+    "*🎮🏅 Elige el modo de juego que deseas jugar:*",
+    keyboard
+  );
 }
-module.exports = { playCommand, restartCommand };
+module.exports = { playCommand, restartCommand, stadisticCommand };

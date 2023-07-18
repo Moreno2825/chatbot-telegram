@@ -1,16 +1,17 @@
 require("dotenv").config();
 const fs = require("fs");
 const { Telegraf, session, Markup, Scenes } = require("telegraf");
-const { playCommand, restartCommand } = require("./commands/playCommand");
+const { playCommand, restartCommand, stadisticCommand } = require("./commands/playCommand");
 const helpCommand = require("./commands/helpCommand");
 const infoCommand = require("./commands/infoCommand");
 const {
   playCategoryCommand,
   handleSpecialitySelection,
-  handleSubSpecialitySelection
+  handleSubSpecialitySelection,
 } = require("./commands/playCategoryCommand");
 const { correctGifts, incorrectGifts } = require("./constant");
 const exitCommand = require("./commands/exitCommand");
+const db = require("./utils/firebase");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -21,28 +22,43 @@ const playScene = new Scenes.BaseScene("playScene");
 playScene.command("play", (ctx) => {
   if (ctx.session.started) {
     playCommand(ctx);
-  } else{
+  } else {
     ctx.reply("Por favor, primero inicia el boton con /start");
   }
-})
+});
 
 const stage = new Scenes.Stage([playScene]);
 bot.use(stage.middleware());
 
 bot.start(async (ctx) => {
   ctx.session.started = true;
-  const gifPath = "public/welcome_opt.gif";
+  const user_id = ctx.from.id;
+  const userRef = db.collection("users").doc(String(user_id));
+  const doc = await userRef.get();
+
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback("Modo Aleatorio", "playCommand"),
     Markup.button.callback("Modo por Categoria", "playCategoryCommand"),
   ]);
 
-  ctx.session ??= {};
+  if (!doc.exists || (doc.exists && doc.data().session === undefined)) {
+    await userRef.set({ session: true }, { merge: true });
+    await ctx.reply(
+      `Bienvenido a Maestro ENARM Chatbot ${ctx.from.first_name} \nImaginate estar preparado para el examen de ENARM y pasar con buena calificación💯\n¿Estaria cool no?😎.\nEsto lo puedes hacer mediante este chatbot donde puedes estudiar a través de telegram en cualquier lugar y comodidad\nPara eso te traigo dos modos de juegos el modo aleatorio que son casos clinicos aleatorios de cualquier especialidad o el modo por especialidad para centrarte en una sola y reforzar\nElige el que mejor te convenga y desafia tus habilidades con Maestro Enarm Chatbot😁👍`,
+      keyboard
+    );
+  } else {
+    const userStadistics = doc.data();
+    const createdAt = userStadistics.createdAt.toDate();
+    await ctx.reply(
+      `¡Hola ${ctx.from.first_name}!😎👍, gracias por visitarnos de nuevo, tu ultima vez que jugaste y se actualio la base de datos fue 🕐${createdAt} vamos a probar tu inteligencia de nuevo. ¿Podras llegar al 100%?💯✅ Tus estadisticas anteriores son:\n\n ✅Respuestas correctas: ${userStadistics.correctCount}\n ❌Respuestas incorrectas: ${userStadistics.incorrectCount}\n\n Precisión: ${userStadistics.precision.toFixed(2)}%`, keyboard
+    );
+  }
 
-  await ctx.reply(
-    `Bienvenido a Maestro ENARM Chatbot ${ctx.from.first_name} \nImaginate estar preparado para el examen de ENARM y pasar con buena calificación💯\n¿Estaria cool no?😎.\nEsto lo puedes hacer mediante este chatbot donde puedes estudiar a través de telegram en cualquier lugar y comodidad\nPara eso te traigo dos modos de juegos el modo aleatorio que son casos clinicos aleatorios de cualquier especialidad o el modo por especialidad para centrarte en una sola y reforzar\nElige el que mejor te convenga y desafia tus habilidades con Maestro Enarm Chatbot😁👍`,
-    keyboard
-  );
+  const gifPath = "public/welcome_opt.gif";
+  
+  ctx.session ??= {};
+  
   await ctx.replyWithAnimation({ source: fs.createReadStream(gifPath) });
 });
 
@@ -92,9 +108,7 @@ bot.action(/answer_(\d+)/, async (ctx) => {
   await ctx.replyWithAnimation({ source: fs.createReadStream(gif) });
 
   if (!isAnswerCorrect) {
-    await ctx.reply(
-      `${(ctx.session.question.feedbackQuestion)}`
-    );
+    await ctx.reply(`${ctx.session.question.feedbackQuestion}`);
   }
 
   if (ctx.session.state === "awaiting") {
@@ -112,16 +126,19 @@ bot.action(/speciality:(.+)/, async (ctx) => {
 
 bot.action(/subSpeciality:(.+)/, async (ctx) => {
   await ctx.answerCbQuery();
-  handleSubSpecialitySelection(ctx); 
+  handleSubSpecialitySelection(ctx);
 });
 
 bot.hears("Hola", (ctx) => {
-  ctx.reply(`Hey hola ${ctx.from.first_name} ¿Como estás?, quieres volver a jugar presiona /start`)
-})
+  ctx.reply(
+    `Hey hola ${ctx.from.first_name} ¿Como estás?, quieres volver a jugar presiona /start`
+  );
+});
 
 bot.command("play", playCommand);
 bot.command("speciality", playCategoryCommand);
 bot.command("restart", restartCommand);
+bot.command("stadistic", stadisticCommand);
 bot.command("exit", exitCommand);
 bot.command("help", helpCommand);
 bot.command("info", infoCommand);
