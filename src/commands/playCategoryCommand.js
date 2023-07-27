@@ -12,7 +12,7 @@ function playCategoryCommand(ctx) {
 
   const keyboard = Markup.inlineKeyboard(specialityButtons, { columns: 2 });
 
-  ctx.replyWithMarkdownV2("**Elige una especialidad: **", keyboard);
+  ctx.reply("Elige una especialidad:", keyboard);
 }
 
 async function handleSpecialitySelection(ctx) {
@@ -28,7 +28,7 @@ async function handleSpecialitySelection(ctx) {
   const subSpecialityButtons = subSpecialities.map((subSpeciality) => Markup.button.callback(subSpeciality, `subSpeciality:${subSpeciality}`));
 
   const keyboard = Markup.inlineKeyboard(subSpecialityButtons, {columns: 2})
-  ctx.replyWithMarkdownV2("Elige una sub especialidad:", keyboard)
+  ctx.reply("Elige una sub especialidad:", keyboard)
 }
 
 async function handleSubSpecialitySelection(ctx){

@@ -144,3 +144,43 @@ bot.command("leer", async (ctx) => {
     ctx.reply("Error al leer la base de datos: " + error.message);
   }
 });
+
+// bot.on('message', async (ctx) => {
+//   if (!ctx.message.successful_payment) {
+//     return;  // if it's not a successful payment message, we just ignore it
+//   }
+
+//   let sender = ctx.from;
+//   const userRef = db.collection("users").doc(String(sender.id));
+//   const doc = await userRef.get();
+
+//   // Actualizamos la información del usuario en la base de datos.
+//   if(doc.exists) {
+//     await userRef.set({ paid: true }, { merge: true });
+//   } else {
+//     await userRef.set({ paid: true });
+//   }
+
+//   // Enviamos un mensaje al usuario para confirmar su pago.
+//   ctx.reply("¡Gracias por tu pago! Ahora tienes acceso total al bot.");
+// });
+
+bot.use(async (ctx, next) => {
+  if (ctx.message && (ctx.message.text == "/start" || ctx.message.text == "/pay")) {
+    return next();  // if it's one of those, skip payment check and go to the next middleware or command handler
+  }
+
+  let sender = ctx.from;
+  const userRef = db.collection("users").doc(String(sender.id));
+  const doc = await userRef.get();
+  let dbUser = doc.exists ? doc.data() : null;
+
+  if(dbUser && dbUser.paid){
+    return next();
+  }
+
+  if (!ctx.updateType || ctx.updateType === 'message') {
+    await ctx.reply("Tienes que pagar para usar este bot. Usa el comando /pay");
+  }
+  return;
+});

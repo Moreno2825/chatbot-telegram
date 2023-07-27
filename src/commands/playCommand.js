@@ -83,7 +83,6 @@ async function storeStatistics(ctx) {
     incorrectCount: ctx.session.incorrectCount,
     precision: precision,
     session: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   await userRef.set(userData, { merge: true });
 }
@@ -126,6 +125,10 @@ async function playCommand(ctx) {
   ]);
 
   if (result === null) {
+    const MAX_MESSAGE_LENGTH = 4096;
+    let currentMessage = "";
+    const messagesToSend = [];
+
     let finalMessage = `¡Has respondido todas las preguntas disponibles!\n\n*✅ Respuestas correctas: ${ctx.session.correctCount} *\n❌*Respuestas incorrectas: ${ctx.session.incorrectCount}.\n Se ha actualizado de manera correcta tu nuevo puntuaje a la base de datos 📚✅*`;
 
     const precision = calculatePrecision(
@@ -138,10 +141,24 @@ async function playCommand(ctx) {
     finalMessage += getPrecisionMessage(precision);
 
     generalFeedbacks.forEach(({ feedback, book }, index) => {
-      finalMessage += `\n\n${
-        index + 1
-      } - ${feedback}\n\nPara más información, consulta el libro📚: ${book}`;
+      const feedbackText = `\n\n${index + 1} - ${feedback}\n\nPara más información, consulta el libro📚: ${book}`;
+      if ((currentMessage + feedbackText).length > MAX_MESSAGE_LENGTH) {
+        messagesToSend.push(currentMessage);
+        currentMessage = feedbackText;
+      } else {
+        currentMessage += feedbackText;
+      }
     });
+
+    if (currentMessage.length > 0) {
+      messagesToSend.push(currentMessage);
+    }
+
+    for (const message of messagesToSend) {
+      await ctx.reply(message, keyboardRestart);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
 
     await ctx.replyWithMarkdown(finalMessage, keyboardRestart);
 
