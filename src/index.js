@@ -40,7 +40,10 @@ async function startCommand(ctx) {
   const userRef = db.collection("users").doc(String(user_id));
   const doc = await userRef.get();
 
-  const hasPaid = doc.exists && Array.isArray(doc.data().payments) && doc.data().payments.length > 0;
+  const hasPaid =
+    doc.exists &&
+    Array.isArray(doc.data().payments) &&
+    doc.data().payments.length > 0;
 
   const keyboard = Markup.inlineKeyboard([
     Markup.button.callback("Modo Aleatorio", "playCommand"),
@@ -48,7 +51,6 @@ async function startCommand(ctx) {
   ]);
 
   if (!hasPaid) {
-    // Si el usuario no ha pagado, se le solicita que haga el pago
     await ctx.reply(
       `Bienvenido a Maestro ENARM Chatbot ${ctx.from.first_name} \nPara poder utilizar este bot, necesitas realizar un pago de 100 pesos. Una vez hecho el pago, podrás disfrutar de todas las funcionalidades de este bot.`
     );
@@ -212,7 +214,6 @@ bot.on("successful_payment", async (ctx) => {
     await userRef.set(userData, { merge: true });
     ctx.reply("¡Pago exitoso! Gracias por tu compra.💸🛍️");
     startCommand(ctx);
-    
   } catch (e) {
     console.log("Error al guardar el pago:", e);
     ctx.reply("Ocurrió un error, por favor intenta de nuevo.");
